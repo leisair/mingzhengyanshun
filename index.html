@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>名正言顺 - AI中文名生成器</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Custom Styles (if needed) -->
+    <link rel="stylesheet" href="/public/css/style.css">
+    <!-- Google Fonts for Pixel Font (example: Press Start 2P) -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'ZCOOL XiaoWei', sans-serif; /* Default to a nice Chinese font */
+            background-color: #f0e7db; /* Retro paper color */
+        }
+        .pixel-font {
+            font-family: 'Press Start 2P', cursive; /* Pixel font for titles/specific elements */
+        }
+        /* Basic pixel border simulation for elements */
+        .pixel-border {
+            border: 4px solid #4a3b31; /* Dark brown border */
+            box-shadow: 4px 4px 0px #8c7b70; /* Simple pixel shadow */
+        }
+        .pixel-border-inset {
+            border: 4px inset #4a3b31; 
+        }
+        .chinese-red { color: #c0392b; }
+        .btn-pixel {
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+        }
+        .btn-pixel:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #8c7b70;
+        }
+        .btn-pixel:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #8c7b70;
+        }
+        .input-pixel:focus {
+            outline: none;
+            border-color: #e74c3c; /* A bright color for focus */
+            box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.3), 4px 4px 0px #8c7b70; /* Gradient-like focus */
+        }
+        .card-pixel:hover {
+            box-shadow: 6px 6px 0px #4a3b31, 0 0 15px rgba(0,0,0,0.2); /* Deeper shadow on hover */
+        }
+    </style>
+</head>
+<body class="bg-[#f0e7db] text-[#4a3b31] min-h-screen flex flex-col items-center pt-8 px-4 selection:bg-[#c0392b] selection:text-white">
+
+    <header class="mb-10 text-center">
+        <h1 class="pixel-font text-4xl md:text-5xl text-[#c0392b] drop-shadow-[3px_3px_0_#4a3b31]">名正言顺</h1>
+        <p class="mt-2 text-lg text-[#6a5a50]">AI 智能中文名生成器</p>
+    </header>
+
+    <main class="w-full max-w-2xl bg-[#fff9f0] p-6 md:p-8 rounded-lg pixel-border mb-12">
+        <div class="mb-8">
+            <label for="english-name" class="block pixel-font text-lg mb-2 text-[#4a3b31]">输入您的英文名 (Enter Your English Name):</label>
+            <input type="text" id="english-name" name="english-name" 
+                   class="w-full p-3 border-4 border-[#8c7b70] rounded-md bg-[#f0e7db] text-[#4a3b31] placeholder-[#8c7b70] focus:ring-2 focus:ring-[#c0392b] focus:border-[#c0392b] transition-all duration-150 input-pixel text-lg"
+                   placeholder="e.g., Alice, Bob, Challenger">
+        </div>
+
+        <button id="generate-btn" 
+                class="w-full pixel-font bg-[#c0392b] text-white py-3 px-6 rounded-md text-xl hover:bg-[#a5281b] active:bg-[#801f13] transition-colors duration-150 btn-pixel pixel-border">
+            <i class="fas fa-wand-magic-sparkles mr-2"></i>生成中文名 (Generate)
+        </button>
+
+        <div id="loading-indicator" class="text-center mt-6 hidden">
+            <i class="fas fa-spinner fa-spin text-3xl text-[#c0392b]"></i>
+            <p class="mt-2 text-lg text-[#6a5a50]">正在为您挑选美名，请稍候...</p>
+        </div>
+        
+        <div id="error-message" class="mt-6 p-4 bg-red-100 border-4 border-red-400 text-red-700 rounded-md hidden pixel-border-inset">
+            <p><i class="fas fa-exclamation-triangle mr-2"></i><strong class="pixel-font">错误!</strong> <span id="error-text"></span></p>
+        </div>
+    </main>
+
+    <section id="results-section" class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 px-2">
+        <!-- Name cards will be inserted here by JavaScript -->
+    </section>
+
+    <footer class="mt-12 mb-6 text-center text-[#6a5a50]">
+        <p class="pixel-font">&copy; 2024 智能起名. All Rights Reserved (maybe).</p>
+        <p class="text-sm mt-1">灵感来源于中国传统文化与现代科技的碰撞。</p>
+    </footer>
+
+    <!-- Name Card Template (hidden) -->
+    <template id="name-card-template">
+        <article class="bg-[#fff9f0] p-5 rounded-lg pixel-border card-pixel transition-shadow duration-150 flex flex-col">
+            <h3 class="pixel-font text-3xl chinese-red mb-3 text-center"></h3>
+            <div class="flex-grow">
+                <p class="mb-1 font-semibold text-sm text-[#4a3b31]">中文寓意 (Chinese Meaning):</p>
+                <p class="text-base mb-3 text-[#6a5a50] leading-relaxed text-justify"></p>
+                <p class="mb-1 font-semibold text-sm text-[#4a3b31]">英文寓意 (English Meaning):</p>
+                <p class="text-base text-[#6a5a50] leading-relaxed text-justify"></p>
+            </div>
+             <img src="" alt="Decorative image related to name meaning" class="mt-4 rounded w-full h-32 object-cover border-2 border-[#8c7b70] hidden">
+        </article>
+    </template>
+
+    <script src="/public/js/script.js"></script>
+</body>
+</html> 

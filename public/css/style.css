@@ -1,0 +1,26 @@
+/* 
+  Custom CSS Styles for 名正言顺 - AI 中文名生成器 
+  Add any specific styles here that are not covered by Tailwind CSS 
+  or the inline styles in index.html.
+
+  For example:
+  .my-custom-class {
+    font-family: 'Your Chosen Font', sans-serif;
+    color: #333;
+  }
+*/
+
+/* Ensuring body takes full height for footer positioning if content is short */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main, section#results-section {
+    flex-shrink: 0;
+}
+
+footer {
+    margin-top: auto; /* Pushes footer to the bottom */
+} 
