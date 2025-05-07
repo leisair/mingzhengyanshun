@@ -65,6 +65,25 @@
                    placeholder="e.g., Alice, Bob, Challenger">
         </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div>
+                <label for="mbti-type" class="block pixel-font text-lg mb-2 text-[#4a3b31]">MBTI (可选):</label>
+                <input type="text" id="mbti-type" name="mbti-type"
+                       class="w-full p-3 border-4 border-[#8c7b70] rounded-md bg-[#f0e7db] text-[#4a3b31] placeholder-[#8c7b70] focus:ring-2 focus:ring-[#c0392b] focus:border-[#c0392b] transition-all duration-150 input-pixel text-lg"
+                       placeholder="e.g., INFP, ESTJ">
+            </div>
+            <div>
+                <label for="gender" class="block pixel-font text-lg mb-2 text-[#4a3b31]">性别 (可选):</label>
+                <select id="gender" name="gender"
+                        class="w-full p-3 border-4 border-[#8c7b70] rounded-md bg-[#f0e7db] text-[#4a3b31] focus:ring-2 focus:ring-[#c0392b] focus:border-[#c0392b] transition-all duration-150 input-pixel text-lg appearance-none px-4">
+                    <option value="">不指定</option>
+                    <option value="male">男 (Male)</option>
+                    <option value="female">女 (Female)</option>
+                    <option value="other">其他 (Other)</option>
+                </select>
+            </div>
+        </div>
+
         <button id="generate-btn" 
                 class="w-full pixel-font bg-[#c0392b] text-white py-3 px-6 rounded-md text-xl hover:bg-[#a5281b] active:bg-[#801f13] transition-colors duration-150 btn-pixel pixel-border">
             <i class="fas fa-wand-magic-sparkles mr-2"></i>生成中文名 (Generate)
@@ -97,6 +116,8 @@
                 <p class="mb-1 font-semibold text-sm text-[#4a3b31]">中文寓意 (Chinese Meaning):</p>
                 <p class="text-base mb-3 text-[#6a5a50] leading-relaxed text-justify"></p>
                 <p class="mb-1 font-semibold text-sm text-[#4a3b31]">英文寓意 (English Meaning):</p>
+                <p class="text-base mb-3 text-[#6a5a50] leading-relaxed text-justify"></p>
+                <p class="mb-1 font-semibold text-sm text-[#4a3b31]">玄学浅析 (Metaphysical Insights):</p>
                 <p class="text-base text-[#6a5a50] leading-relaxed text-justify"></p>
             </div>
              <img src="" alt="Decorative image related to name meaning" class="mt-4 rounded w-full h-32 object-cover border-2 border-[#8c7b70] hidden">

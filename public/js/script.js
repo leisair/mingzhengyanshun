@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingIndicator = document.getElementById('loading-indicator');
     const errorMessageDiv = document.getElementById('error-message');
     const errorTextSpan = document.getElementById('error-text');
+    // New input fields
+    const mbtiInput = document.getElementById('mbti-type');
+    const genderSelect = document.getElementById('gender');
 
     // Define some Unsplash placeholder image keywords related to Chinese culture / good fortune
     // These are just ideas; actual image fetching logic is not implemented here
@@ -17,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     generateBtn.addEventListener('click', async () => {
         const englishName = englishNameInput.value.trim();
+        const mbti = mbtiInput.value.trim(); // Get MBTI value
+        const gender = genderSelect.value; // Get Gender value
 
         if (!englishName) {
             showError('请输入您的英文名 (Please enter your English name).');
@@ -35,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ englishName })
+                body: JSON.stringify({ englishName, mbti, gender }) // Send mbti and gender
             });
 
             showLoading(false);
@@ -94,11 +99,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const cardArticle = cardClone.querySelector('article');
             
             cardArticle.querySelector('h3').textContent = nameData.chineseName || '（无名氏）';
-            // childNodes[2] is a heuristic, might need to be more robust by adding specific classes/ids
-            const meanings = cardArticle.querySelectorAll('p'); // p[0]=label, p[1]=value, p[2]=label, p[3]=value
-            if (meanings.length >= 4) {
-                 meanings[1].textContent = nameData.chineseMeaning || '暂无中文释义。';
-                 meanings[3].textContent = nameData.englishMeaning || 'No English explanation available.';
+            const meaningParagraphs = cardArticle.querySelectorAll('p');
+            // p[0] is label for Chinese Meaning, p[1] is its value
+            // p[2] is label for English Meaning, p[3] is its value
+            // p[4] is label for FengShui Meaning, p[5] is its value
+            if (meaningParagraphs.length >= 6) {
+                 meaningParagraphs[1].textContent = nameData.chineseMeaning || '暂无中文释义。';
+                 meaningParagraphs[3].textContent = nameData.englishMeaning || 'No English explanation available.';
+                 meaningParagraphs[5].textContent = nameData.fengShuiMeaning || '暂无玄学解析。'; // Populate FengShui meaning
+            } else {
+                // Fallback or error if template structure is not as expected
+                console.error("Card template structure doesn't match expected for meanings.");
+                 meaningParagraphs[1].textContent = nameData.chineseMeaning || '暂无中文释义。';
+                 if (meaningParagraphs.length >=4) meaningParagraphs[3].textContent = nameData.englishMeaning || 'No English explanation available.';
             }
 
             const imgElement = cardArticle.querySelector('img');

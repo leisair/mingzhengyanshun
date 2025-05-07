@@ -34,7 +34,7 @@ const server = http.createServer(async (req, res) => {
 
         req.on('end', async () => {
             try {
-                const { englishName } = JSON.parse(requestBody);
+                const { englishName, mbti, gender } = JSON.parse(requestBody);
 
                 if (!englishName || typeof englishName !== 'string' || englishName.trim() === '') {
                     res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -43,16 +43,46 @@ const server = http.createServer(async (req, res) => {
                 }
 
                 // 为AI精心设计的系统提示和用户提示
-                const systemPromptContent = `你是人工智能助手。你的任务是为外国人根据他们的英文名生成3个带有幽默感和中国文化元素的中文名。
-每个名字都需要提供中文和英文的寓意解释。请确保名字有趣、独特，可以适当使用网络梗，但要保持积极向上、文雅且易于发音。
-返回格式应该是一个JSON对象数组，每个对象包含 "chineseName", "chineseMeaning", "englishMeaning" 三个字段。例如：
+                let systemPromptContent = `你是人工智能助手，一位精通中国文化、语言艺术、个性心理学（如MBTI）及传统玄学（如简易风水、生肖、姓名学）的起名大师。
+你的任务是为外国人根据他们提供的英文名、MBTI人格类型（如果提供）和性别（如果提供）生成3个富有创意、带有幽默感和深厚中国文化底蕴的中文名。
+
+每个名字都需要提供以下信息：
+1.  中文名 (chineseName)
+2.  中文寓意 (chineseMeaning): 解释名字的字面意思和引申含义，体现文化和美好祝愿。
+3.  英文寓意 (englishMeaning): 对中文寓意的英文翻译和解释。
+4.  玄学浅析 (fengShuiMeaning): 从简化的风水、五行、生肖或姓名学等角度，趣味性地解读名字可能带来的吉祥寓意或能量导向，可以幽默一些，不必过于严肃精准，点到为止。
+
+请在生成名字时：
+-   如果用户提供了MBTI，尝试将MBTI的某些特质巧妙地融入部分名字的寓意或选字中，或在玄学浅析中提及性格相关的祝福。
+-   如果用户提供了性别，请确保名字在音韵和字义上符合对应性别的气质，当然也可以考虑一些中性或突破传统印象的名字如果合适的话。
+-   名字应有趣、独特、积极向上、文雅且易于发音。
+-   可以适当使用一些轻松的网络梗或幽默元素，但要避免低俗或冒犯性的内容。
+-   重点理解英文名的发音或含义，并在此基础上进行意译或音译创新，赋予中文名新的生命力。
+
+返回格式严格要求为一个JSON对象数组，每个对象包含 "chineseName", "chineseMeaning", "englishMeaning", "fengShuiMeaning" 四个字段。例如：
 [
-  { "chineseName": "雷霆", "chineseMeaning": "象征力量和速度，如雷电般迅猛。", "englishMeaning": "Symbolizes power and speed, as swift as thunder." },
-  { "chineseName": "夏雨荷", "chineseMeaning": "美丽的名字，让人联想到夏日雨后的荷花，清新脱俗。", "englishMeaning": "A beautiful name reminiscent of lotus flowers after a summer rain, fresh and refined." }
+  {
+    "chineseName": "雷笑天",
+    "chineseMeaning": "'雷'象征力量与声势，'笑天'寓意乐观开朗，笑对人生，响彻云天。适合性格外向、有活力的人。",
+    "englishMeaning": "'Lei' (Thunder) symbolizes power and presence. 'XiaoTian' (Laughing at the Sky) implies optimism, facing life with a laugh that resounds in the heavens. Suitable for an outgoing and energetic person.",
+    "fengShuiMeaning": "名字带水带火，若八字喜水火则为佳。'天'字有助拓展视野和心胸，笑口常开，好运自然来。MBTI中E型人格或有此名，社交场合如鱼得水。"
+  },
+  {
+    "chineseName": "苏梦蝶",
+    "chineseMeaning": "'苏'字有万物复苏之意，也常用于音译；'梦蝶'取自庄周梦蝶的典故，富有哲思和浪漫色彩，寓指自由的灵魂和对美好的向往。",
+    "englishMeaning": "'Su' implies revival and is often used in phonetic translations. 'MengDie' (Dreaming Butterfly) alludes to Zhuangzi's dream, full of philosophical and romantic color, suggesting a free spirit and yearning for beauty.",
+    "fengShuiMeaning": "此名五行偏木，有生长、柔和之意。蝴蝶在玄学中也常象征转变和美好的爱情。适合心思细腻、有艺术气息的INFP或INFJ，能增强内在的平和与创造力。"
+  }
 ]
 请确保返回严格的JSON格式的数组，不要包含任何JSON以外的解释性文本或markdown代码块标记。`;
                 
-                const userPromptContent = `请为英文名 \"${englishName}\" 生成三个符合上述要求的中文名。`;
+                let userPromptContent = `请为英文名 \"${englishName}\" 生成三个符合上述要求的中文名。`;
+                if (mbti && mbti.trim() !== '') {
+                    userPromptContent += ` 其MBTI人格类型是 ${mbti.trim()}。`;
+                }
+                if (gender && gender.trim() !== '') {
+                    userPromptContent += ` 性别是 ${gender.trim()}。`;
+                }
 
                 const volcEngineRequestBody = JSON.stringify({
                     model: MODEL_NAME,
