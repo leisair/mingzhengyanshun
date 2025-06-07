@@ -32,7 +32,7 @@ const server = http.createServer(async (req, res) => {
             requestBody += chunk.toString();
         });
 
-        req.on('end', async () => {
+        req.on('end', () => {
             try {
                 const { englishName, mbti, gender } = JSON.parse(requestBody);
 
@@ -66,12 +66,6 @@ const server = http.createServer(async (req, res) => {
     "chineseMeaning": "'雷'象征力量与声势，'笑天'寓意乐观开朗，笑对人生，响彻云天。适合性格外向、有活力的人。",
     "englishMeaning": "'Lei' (Thunder) symbolizes power and presence. 'XiaoTian' (Laughing at the Sky) implies optimism, facing life with a laugh that resounds in the heavens. Suitable for an outgoing and energetic person.",
     "fengShuiMeaning": "名字带水带火，若八字喜水火则为佳。'天'字有助拓展视野和心胸，笑口常开，好运自然来。MBTI中E型人格或有此名，社交场合如鱼得水。"
-  },
-  {
-    "chineseName": "苏梦蝶",
-    "chineseMeaning": "'苏'字有万物复苏之意，也常用于音译；'梦蝶'取自庄周梦蝶的典故，富有哲思和浪漫色彩，寓指自由的灵魂和对美好的向往。",
-    "englishMeaning": "'Su' implies revival and is often used in phonetic translations. 'MengDie' (Dreaming Butterfly) alludes to Zhuangzi's dream, full of philosophical and romantic color, suggesting a free spirit and yearning for beauty.",
-    "fengShuiMeaning": "此名五行偏木，有生长、柔和之意。蝴蝶在玄学中也常象征转变和美好的爱情。适合心思细腻、有艺术气息的INFP或INFJ，能增强内在的平和与创造力。"
   }
 ]
 请确保返回严格的JSON格式的数组，不要包含任何JSON以外的解释性文本或markdown代码块标记。`;
@@ -87,9 +81,7 @@ const server = http.createServer(async (req, res) => {
                 const volcEngineRequestBody = JSON.stringify({
                     model: MODEL_NAME,
                     messages: [
-                        // System message to guide the AI's role and output format
                         { role: "system", content: systemPromptContent },
-                        // User message providing the specific task (the English name)
                         { role: "user", content: userPromptContent }
                     ],
                 });
@@ -106,6 +98,8 @@ const server = http.createServer(async (req, res) => {
                     timeout: API_TIMEOUT,
                 };
 
+                let hasResponded = false;
+
                 const volcRequest = https.request(options, (volcRes) => {
                     let volcData = '';
                     volcRes.setEncoding('utf8');
@@ -113,12 +107,15 @@ const server = http.createServer(async (req, res) => {
                         volcData += chunk;
                     });
                     volcRes.on('end', () => {
+                        if (hasResponded) return;
+                        hasResponded = true;
+
                         if (volcRes.statusCode >= 200 && volcRes.statusCode < 300) {
                             try {
                                 const parsedResponse = JSON.parse(volcData);
-                                if (parsedResponse.choices && parsedResponse.choices.length > 0 && parsedResponse.choices[0].message && parsedResponse.choices[0].message.content) {
+                                if (parsedResponse.choices && parsedResponse.choices.length > 0 && 
+                                    parsedResponse.choices[0].message && parsedResponse.choices[0].message.content) {
                                     let namesContent = parsedResponse.choices[0].message.content;
-                                    // 尝试移除AI可能添加的Markdown代码块标记
                                     namesContent = namesContent.replace(/^```json\s*|```\s*$/g, '').trim();
                                     
                                     try {
@@ -127,36 +124,52 @@ const server = http.createServer(async (req, res) => {
                                         res.end(JSON.stringify(namesArray));
                                     } catch (parseError) {
                                         console.error('Error parsing AI response content JSON:', parseError);
-                                        console.error('Raw AI response content (after cleaning):', namesContent);
                                         res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
-                                        res.end(JSON.stringify({ error: 'AI response content is not valid JSON.', details: namesContent }));
+                                        res.end(JSON.stringify({ 
+                                            error: 'AI response content is not valid JSON.',
+                                            details: namesContent 
+                                        }));
                                     }
                                 } else {
-                                    console.error('Unexpected AI response structure:', volcData);
                                     res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
-                                    res.end(JSON.stringify({ error: 'Unexpected AI response structure.', details: volcData }));
+                                    res.end(JSON.stringify({ 
+                                        error: 'Unexpected AI response structure.',
+                                        details: volcData 
+                                    }));
                                 }
                             } catch (e) {
-                                console.error('Error parsing VolcEngine JSON response envelope:', e);
-                                console.error('Raw VolcEngine response:', volcData);
                                 res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
-                                res.end(JSON.stringify({ error: 'Error processing AI response structure.', details: volcData }));
+                                res.end(JSON.stringify({ 
+                                    error: 'Error processing AI response structure.',
+                                    details: volcData 
+                                }));
                             }
                         } else {
-                            console.error(`VolcEngine API error: ${volcRes.statusCode}`, volcData);
                             res.writeHead(volcRes.statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
-                            res.end(JSON.stringify({ error: `AI service error: ${volcRes.statusCode}`, details: volcData }));
+                            res.end(JSON.stringify({ 
+                                error: `AI service error: ${volcRes.statusCode}`,
+                                details: volcData 
+                            }));
                         }
                     });
                 });
 
                 volcRequest.on('error', (e) => {
+                    if (hasResponded) return;
+                    hasResponded = true;
+
                     console.error('Error calling VolcEngine API:', e.message);
                     res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
-                    res.end(JSON.stringify({ error: 'Failed to call AI service.', details: e.message }));
+                    res.end(JSON.stringify({ 
+                        error: 'Failed to call AI service.',
+                        details: e.message 
+                    }));
                 });
 
                 volcRequest.on('timeout', () => {
+                    if (hasResponded) return;
+                    hasResponded = true;
+
                     volcRequest.destroy();
                     console.error('VolcEngine API request timed out');
                     res.writeHead(504, { 'Content-Type': 'application/json; charset=utf-8' });
